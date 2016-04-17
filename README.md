@@ -1,3 +1,3 @@
 # Doodle
 Game using javascript and css.
-<!-- Just open doodle.html and enjoy-->
+ Just open doodle.html and enjoy
