@@ -1,0 +1,422 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Untitled Document</title>
+    
+<style>
+	body{text-align:center;}
+	canvas
+	{
+		background-image:url(WHu9Z.png);
+		border:solid;}
+
+</style>
+</head>
+
+<body onload="homePage()">
+    
+    
+
+<script>
+
+	var gamePiece;
+	var jump=0;
+	var bottom;
+	var gamePillar=[]
+	var gameBugs=[];
+	var gameHole=[];
+	var bugSpeed =1;
+	var music;
+	var deadMusic;
+    var killMusic;
+    var gameBase=[];
+    var gameProp=[];
+    var Home;
+    var moveSpeed;
+    var q=1;
+    var overMusic;
+    var coinMusic;
+    var score;
+    var counter=0;
+    var person;
+    var health;
+    var state= 100;
+    
+    function homePage() {
+     person = prompt("Please enter your name", "Doodle");
+    
+    if (person != null) {
+        startGame();
+    }
+        else{homePage();}
+}   
+    
+    function startGame()
+	{
+		
+		gameArea.start();
+		gamePiece=new component(60,60,"adam.gif",10,250,"image");
+		gamePillar[1]=new component(80,150,"green",635,350,"");
+       gamePillar[2]=new component(80,140,"green",1375, 360,"");
+       gamePillar[3]=new component(80,70,"green",3175, 430,"");
+       gamePillar[4]=new component(80,150,"green",3775, 350,"");
+       gamePillar[5]=new component(80,150,"green",4575, 350,"");
+       //gamePillar[6]=new component(50,40,"green",4015, 460,"");
+       //gamePillar[7]=new component(50,110,"green",4855, 390,"");
+      // gamePillar[8]=new component(50,80,"green",5595, 420,"");
+		gameBugs.push(new component (40,40,"enemy.gif", 500, 280,"image"));
+        gameHole[1] = new component (120,90, "white", 725, 500,"");
+        gameHole[2] = new component (130,90, "white", 2200, 500,"");
+        gameHole[3] = new component (150,90, "white", 4000, 500,"");
+        gameBase.push(new component(1250, 90, "base.gif", 0, 500, "image" ));
+        gameProp.push(new component(30,30, "coin.gif",330,300, "image" ));
+        home=new component(150, 150 ,"home.gif",4800,350, "image");
+        music = new sound("mario1.mp3");
+		deadMusic= new sound("mariodies.mp3");
+        killMusic= new sound("killsound.mp3");
+        overMusic= new sound("gameover.mp3");
+        coinMusic=new sound("MarioCoin.mp3");
+        score = new component("30px", "Consolas", "black", 50, 40, "text");
+        health = new component("30px", "Consolas", "black",1050, 40, "text");
+		music.play();
+		
+		}
+    		var gameArea = {
+		canvas: document.createElement("canvas"),
+		start: function() {
+			this.canvas.width=1250;
+			this.canvas.height=590;
+			this.context=this.canvas.getContext("2d");
+			document.body.insertBefore(this.canvas,document.body.childNodes[0]);
+            this.frameNo=0;
+			this.interval=setInterval(updateGameArea,9);
+			window.addEventListener('keydown', function(e) {
+				gameArea.keys=(gameArea.keys || []);
+				gameArea.keys[e.keyCode]=true;
+			})
+			window.addEventListener('keyup', function(e) {
+				gameArea.keys[e.keyCode]=false;
+			})
+		
+			},
+		clear:function(){ 
+		this.context.clearRect(0,0,this.canvas.width,this.canvas.height);
+		},
+		 stop : function(state) {
+             if(state=="win")
+                 {
+                   music.stop();    
+			 overMusic.play(); 
+             clearInterval(this.interval);
+		      alert("Game finish.Congrats\n\nReload page to play again" );  
+                 } 
+             else{
+                 music.stop();    
+			 deadMusic.play(); 
+             clearInterval(this.interval);
+		      gameRestart();
+             }
+         }
+        /*over:function()
+                {
+                 music.stop();    
+			 overMusic.play(); 
+		      clearInterval(this.interval);
+		      alert("Game over<br/>Play again" );
+            }*/
+    }
+            
+            function component(width, height, color, x, y, type) {
+                 this.type = type;
+              if (type == "image") {
+                this.image = new Image();
+                this.image.src = color;
+              }
+                this.width = width;
+                this.height = height;
+                this.speedX=0;
+                this.speedY=0;
+                this.x = x;
+                this.y = y;
+                this.gravity= .005;
+                this.gravitySpeed=0;    
+                this.update = function(){
+                    ctx = gameArea.context;
+                     if (type == "image") {
+                      ctx.drawImage(this.image, 
+                    this.x, 
+                    this.y,
+                    this.width, this.height);
+                    } 
+                    else if (type == "text") {
+                          ctx.font = this.width + " " + this.height;
+                          ctx.fillStyle = color;
+                          ctx.fillText(this.text, this.x, this.y);
+                        }
+                    else {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(this.x, this.y, this.width, this.height);
+                            }
+                    }
+                 this.newPos = function(ob,obj) {
+                     this.gravitySpeed += this.gravity;
+                    this.x += this.speedX;
+                    this.y += this.speedY + this.gravitySpeed;
+                    bottom=gameArea.canvas.height-this.height-90;
+
+
+                    if(this.x + this.width > ob.x && this.y + this.height> ob.y + 2 && this.x + this.width < ob.x + ob.width/2)
+                    {
+                        this.x =ob.x - this.width;}
+
+                    if(this.x < ob.x + ob.width && this.y + this.height> ob.y && this.x > ob.x + ob.width/2)
+                    {
+                        this.x =ob.x + ob.width;}
+
+                    if(this.x + this.width > ob.x+2 && this.x + this.width < ob.x + ob.width +this.width-2 && this.y + this.height< ob.y+ 2 )
+                    {
+                        bottom = ob.y - this.height;
+                        }
+                
+                    if(this.x > obj.x -8 && this.x + this.width < obj.x +obj.width + 8)
+                    {
+                        bottom=gameArea.canvas.height;
+
+                    }
+                        if(this.y > bottom)
+                        {
+                            this.y=bottom;
+                            this.gravity=0;
+                            jump=1;
+                            this.gravitySpeed=0;
+                        }
+                        if(this.y < bottom-22)
+                        {
+                            this.gravity = 0.05
+                        }	
+
+                }
+                 
+                 this.crashWith= function(otherobj,a){
+                    var myleft=this.x ;
+                    var myright=this.x + (this.width);
+                    var mytop = this.y;
+                    var mybottom = this.y + (this.height);
+                var otherleft = otherobj.x;
+                var otherright = otherobj.x + (otherobj.width);
+                var othertop = otherobj.y;
+                var otherbottom = otherobj.y + (otherobj.height);
+                    var crash=false;
+                    if(myright > otherleft && myright<otherright+ this.width-2 && mybottom>othertop+a){crash= true;}
+                        
+                    return crash;
+                }
+                this.killCheck = function(otherobj)
+                 {
+                     var myleft=this.x ;
+                        var myright=this.x + (this.width);
+                        var mytop = this.y;
+                        var mybottom = this.y + (this.height);
+                    var otherleft = otherobj.x;
+                    var otherright = otherobj.x + (otherobj.width);
+                    var othertop = otherobj.y;
+                    var otherbottom = otherobj.y + (otherobj.height);
+                     if(myright > otherleft && myright<otherright+ this.width && mybottom>othertop-2 && mybottom<othertop+2)
+                    {
+                        if(this.x==gamePiece.x)
+                        {counter+=10;}
+                        bugKill(otherobj);
+                        killMusic.play();
+
+                     }
+                 }
+                        
+          }
+            
+    var p=1;
+            function updateGameArea() {
+                
+            var x, y;
+            for(i=0;i<gameBugs.length;i++)
+                {
+				gamePiece.killCheck(gameBugs[i]);
+                }
+			
+                for (i = 0; i < gameBugs.length; i++) 
+                {
+                    if (gamePiece.crashWith(gameBugs[i],0)) {
+                        if(state==100)
+                            {
+                                health.text= "Health :"+" "+ 000;
+                            health.update();
+                            }
+                        
+                        gameArea.stop("lose");
+                        return;
+                    } 
+                }
+                if(gamePiece.crashWith(gameHole[q],25)){gameArea.stop("lose");}
+                
+              for(i=0;i<gameBugs.length;i++)
+                  {
+                      for(j=1;j<gamePillar.length;j++)
+                            {
+                            if (gameBugs[i].crashWith(gamePillar[j],0)) {
+                                    bugSpeed *=-1;}
+                            }
+                   }
+                
+                
+                gameArea.clear();
+                
+                
+                if(gamePiece.x>1000)
+                {moveSpeed=-0.5;
+                gamePiece.x+=-0.5;
+                }
+            else {moveSpeed=0;
+                  bugSpeed=-1;
+                 }
+                if(bugSpeed==+2 || bugSpeed== -2)
+                    {bugSpeed /=2;}
+                gamePiece.speedX=0;
+			     gamePiece.speedY= 0;
+                if (gameArea.keys && gameArea.keys[37]){gamePiece.speedX = -1.5;}
+                        if (gameArea.keys&& gameArea.keys[39]) {gamePiece.speedX = 1.5;counter++;
+                            if(gamePiece.x>700){
+                                moveSpeed= -1.5;
+                                bugSpeed=-2.5;
+                                gamePiece.speedX = 0;}
+                                                               }
+                        if (gameArea.keys&& gameArea.keys[38]) {
+
+                            if(jump == 1)
+                            {	gamePiece.gravity = -0.3;
+                                jump=0;
+                            }
+                        }
+                home.x+=moveSpeed;
+                home.update();
+                 gameArea.frameNo += 1;
+                
+                 if (gameArea.frameNo == 1 || everyinterval(150)){
+                    x = gameArea.canvas.width;
+                    y = gameArea.canvas.height - 115;
+                    gameBugs.push(new component(40, 40, "enemy.gif", x, y,"image"));
+                }
+                for (i = 0; i < gameBugs.length; i += 1) {
+                     
+                       for(j=1;j<gamePillar.length;j++)
+                       {
+                           gameBugs[i].newPos(gamePillar[j],gameHole[q]);
+                        }
+                    gameBugs[i].x +=bugSpeed;
+                    for(j=1;j<gameHole.length;j++)
+                    {if(gameBugs[i].crashWith(gameHole[j],100)){bugKill(gameBugs[i]);}
+                        gameBugs[i].update();
+                    }
+                }
+
+                
+                score.text =person +  ": " +counter;
+                score.update();
+                
+                health.text= "Health :"+" "+state;
+                health.update();
+                
+                if (gameBase[gameBase.length-1].x < 1 ){
+                    x = gameArea.canvas.width;
+                    y = gameArea.canvas.height - 90
+                    gameBase.push(new component(1250, 90, "base.gif", x, y,"image"));
+                }
+                for (i = 0; i < gameBase.length; i += 1) {
+                    gameBase[i].x += moveSpeed;
+                    gameBase[i].update();
+                }
+                if (gameArea.frameNo == 1 || everyinterval(450)){
+                    x = gameArea.canvas.width;
+                    y = gameArea.canvas.height - 300;
+                    gameProp.push(new component(30, 30, "coin.gif", x, y,"image"));
+                }
+                for (i = 0; i < gameProp.length; i += 1) {
+                    gameProp[i].x += moveSpeed;
+                    gameProp[i].update();
+                }
+                
+                
+                
+                for(i=1;i<gamePillar.length;i++)
+                    {
+                        gamePillar[i].x +=moveSpeed;
+                        gamePillar[i].update();
+                    }
+                for(i=1;i<gameHole.length;i++)
+                    {
+                        gameHole[i].x+=moveSpeed;
+                        gameHole[i].update();
+                    }
+                
+              
+                gamePiece.newPos(gamePillar[p],gameHole[q]);
+                gamePiece.update();
+                if(gamePillar[p].x+ gamePillar[p].width+500<gamePiece.x){p++;}
+                if(gameHole[q].x + gameHole[q].width+ 700< gamePiece.x){q++;}
+                if(gamePiece.x>home.x + home.width/2-100){gameArea.stop("win")}
+                collectCoin();
+            }
+    
+    function bugKill(otherobj)
+    {
+        while(otherobj.height>0)
+			{
+				otherobj.height +=-0.5;
+				
+			}
+			otherobj.y=530;
+    }
+
+    function collectCoin()
+    {
+      for(i=0;i<gameProp.length;i++)
+          {
+              if(gamePiece.x + gamePiece.width > gameProp[i].x && gamePiece.x < gameProp[i].x +gameProp[i].width && gamePiece.y< gameProp[i].y +gameProp[i].width)
+                 { gameProp[i].x=-50;
+              counter+=100;
+                 coinMusic.play();}
+          }
+    }
+    
+    
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }
+}
+
+    function everyinterval(n) {
+    if ((gameArea.frameNo / n) %2 == 0) {return true;}
+    return false;
+}
+    function gameRestart() {
+   
+    if (confirm("Game Over \n Restart??") == true) {
+        location.reload();
+    } else {
+       alert("Thankyou for playing :)");
+    }
+    }
+    
+    
+    </script>
+    </body>
+</html>
